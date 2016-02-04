@@ -16,6 +16,6 @@ complete <- function(directory, id = 1:332) {
         
         #4. Desired data frame
         #Note. `tapply` returns the numbers of complete data for each monitor
-        result <- data.frame(id = id, nobs = tapply(data_of_monitor$ID, data_of_monitor$ID, length))
+        result <- data.frame(id = unique(data_of_monitor$ID), nobs = tapply(data_of_monitor$ID, data_of_monitor$ID, length))
         result
 }
