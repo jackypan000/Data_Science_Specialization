@@ -11,6 +11,6 @@ pollutantmean <- function(directory, pollutant, id = 1:332){
                 data_of_monitor <- rbind(data_of_monitor, temp)
         }
     
-        #4. Calculate the mean excluding missing value, 3 digits as example
-        round( mean(data_of_monitor[, pollutant], na.rm = TRUE) ,digits = 3)
+        #4. Calculate the mean excluding missing value
+        mean(data_of_monitor[, pollutant], na.rm = TRUE) 
 }
