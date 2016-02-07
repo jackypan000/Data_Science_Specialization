@@ -16,7 +16,7 @@ best <- function(state, outcome) {
         data <- data[,c(2, 7, 11, 17, 23)]
         names(data) <- c("Hospital.Name", "State", "heart attack",
                          "heart failure", "pneumonia")
-        # 4. Remove NAs and convert outcome variables into numeric
+        # 4. Convert outcome variables into numeric
         data <- na.omit(data)
         data[, 3:5] <- sapply(data[,3:5], as.numeric)
         
@@ -38,6 +38,7 @@ best <- function(state, outcome) {
                        # then hospital “b” should be returned)
                        temp <- temp[order(temp$Hospital.Name),]
                        temp <- temp[order(temp[,outcome]), ]
+                       temp <- na.omit(temp) #Remove NAs
                        
                        # 3. Return the best hospital
                        result <- head(temp,1)[,1]
