@@ -10,7 +10,6 @@ rankhospital <- function(state, outcome, num="best"){
         names(data) <- c("Hospital.Name", "State", "heart attack",
                          "heart failure", "pneumonia")
         # 4. Convert outcome variables into numeric
-        data <- na.omit(data)
         data[, 3:5] <- sapply(data[,3:5], as.numeric)
         
         ## Input validness check for `state` & `outcome`

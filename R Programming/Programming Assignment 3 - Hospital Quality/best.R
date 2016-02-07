@@ -17,7 +17,6 @@ best <- function(state, outcome) {
         names(data) <- c("Hospital.Name", "State", "heart attack",
                          "heart failure", "pneumonia")
         # 4. Convert outcome variables into numeric
-        data <- na.omit(data)
         data[, 3:5] <- sapply(data[,3:5], as.numeric)
         
         
