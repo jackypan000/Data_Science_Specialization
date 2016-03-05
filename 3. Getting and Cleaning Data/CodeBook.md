@@ -73,6 +73,18 @@ Each person performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTA
 Represent the vector of features was obtained by calculating variables from the time and frequency domain. 
 **Only include the measurements on the mean and standard deviation.**
 
+#####The pattern of vector of features:
+
+`__1__`.`__2__`-`__3__`-`__4__`
+
+`1`:  **Time**/ **FFT**
+
+`2`:  **BodyAcc(Mag)**/ **GravityAcc(Mag)**/ **BodyAccJerk(Mag)**/ **BodyGyroJerk(Mag)**/ **BodyBodyAccJerkMag**/ **BodyBodyGyroMag**/ **BodyBodyGyroJerkMag**
+
+`3`:  **Mean**/ **Std**
+
+`4`:  **(Empty)**/ **X**/ **Y**/ **Z**
+
 ##### These signals were used to estimate variables of the feature vector for each pattern:  
 
 * `-X`, `-Y` and `-Z` are used to denote 3-axial signals in the X, Y and Z directions.
@@ -87,5 +99,5 @@ Represent the vector of features was obtained by calculating variables from the 
 
 ## Sources
 
-Adopted from [this CodeBook Example](https://gist.github.com/JorisSchut/dbc1fc0402f28cad9b41)
+Adopted from this [CodeBook Example](https://gist.github.com/JorisSchut/dbc1fc0402f28cad9b41)
 
