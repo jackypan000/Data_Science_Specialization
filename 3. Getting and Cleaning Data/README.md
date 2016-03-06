@@ -163,7 +163,7 @@ Variables not shown: Time.GravityAcc-Mean-Y (dbl), Time.GravityAcc-Mean-Z (dbl),
   (dbl), FFT.BodyBodyGyroMag-Std (dbl), FFT.BodyBodyGyroJerkMag-Mean (dbl), FFT.BodyBodyGyroJerkMag-Std (dbl)
 ```
 
-* Step3. Write the tidy data into tidy_data.txt
+* Step3. Write the tidy data into [`tidy_data.txt`](https://github.com/jackypan000/Data_Science_Specialization/blob/master/3.%20Getting%20and%20Cleaning%20Data/tidy_data.txt)
 
 ```r
 write.table(tidy_data, "tidy_data.txt", sep = "\t", quote = FALSE, row.names = FALSE)
