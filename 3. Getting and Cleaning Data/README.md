@@ -1,10 +1,10 @@
 ## Getting and Cleaning Data - Course Project
 ### General description about this README
-This README is used to explain the `run_analysis.R` clearly and understandably. 
+This README is used to explain the [`run_analysis.R`](https://github.com/jackypan000/Data_Science_Specialization/blob/master/3.%20Getting%20and%20Cleaning%20Data/run_analysis.R) clearly and understandably. 
 
 This file includes how to get the raw data, preprocess the data and obtain our final goal: the tidy dataset.
 
-
+Anything regarding variables' explanation is included in [CodeBook](https://github.com/jackypan000/Data_Science_Specialization/blob/master/3.%20Getting%20and%20Cleaning%20Data/CodeBook.md).
 
 <br>
 ### 0.Data preparation
@@ -168,3 +168,15 @@ Variables not shown: Time.GravityAcc-Mean-Y (dbl), Time.GravityAcc-Mean-Z (dbl),
 ```r
 write.table(tidy_data, "tidy_data.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 ``` 
+
+## Other
+You can also use this code to load the tidy data
+
+```r
+tidy_data <- read.table("tidy_data.txt", header = TRUE)
+View(tidy_data)
+```
+
+<br>
+This blog includes the advice from lecturer about this course project
+https://thoughtfulbloke.wordpress.com/2015/09/09/getting-and-cleaning-the-assignment/
