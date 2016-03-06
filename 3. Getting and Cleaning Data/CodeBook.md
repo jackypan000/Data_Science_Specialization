@@ -50,9 +50,7 @@ Some information on the variable including:
 * Unique values/levels of the variable: **1, 2, 3,......,30**
 * Unit of measurement: **N/A**
 
-
-
-
+<br>
 > #### ActivityName
 
 Represent the activities performed during the experiment.
@@ -68,10 +66,18 @@ Some information on the variable including:
 
 Each person performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone (Samsung Galaxy S II) on the waist.
 
+<br>
 > #### Other variables
 
 Represent the vector of features was obtained by calculating variables from the time and frequency domain. 
 **Only include the measurements on the mean and standard deviation.**
+
+Some information on the variables including:
+
+* Class of the variables: **Numeric**
+* Unique values/levels of the variables: **Numbers exist in range of [-1, 1]**
+* Unit of measurement: **Mean value of each measurement**
+
 
 #####The pattern of vector of features:
 
@@ -95,6 +101,7 @@ Represent the vector of features was obtained by calculating variables from the 
 * `BodyAccJerk`: Body linear acceleration were derived in time to obtain Jerk signals.
 * `BodyGyroJerk`: Body angular velocity were derived in time to obtain Jerk signals.
 * `...Mag...`: The magnitude of these three-dimensional signals were calculated using the Euclidean norm.
+
 
 
 ## Sources
