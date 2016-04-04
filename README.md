@@ -3,5 +3,5 @@
 ## Intro
 
 ## Reference
-https://datasciencespecialization.github.io
-https://github.com/DataScienceSpecialization/courses
+[https://datasciencespecialization.github.io]()
+[https://github.com/DataScienceSpecialization/courses]()
