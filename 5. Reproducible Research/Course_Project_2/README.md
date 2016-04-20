@@ -64,3 +64,7 @@ Once your document is published to RPubs, you should get a unique URL to that do
 
 **NOTE**: If you are having trouble connecting with RPubs due to proxy-related or other issues, you can upload your final analysis document file as a PDF to Coursera instead.
 
+## My Published Results
+Analysis Link: [http://rpubs.com/jackypan000/172832](http://rpubs.com/jackypan000/172832)
+
+

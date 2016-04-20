@@ -1,0 +1,258 @@
+---
+title: "Prevention Advisory For Severe Weather Events in U.S."
+output: html_document
+author: "Jacky Pan"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message=FALSE)
+```
+
+#Synopsis
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities in U.S. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+
+For prevention, we explore the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.  
+  
+
+> The results of analysis indicate that, from 1950 to Nov 2011:  
+> 1. **Tornado** was the most harmful with respect to population health.  
+> 2. **Flood** affected the greatest economic consequence(damage).  
+
+#Data Processing
+### Data Preparing
+Downlaod the storm datasets for this project.  
+```{r download_data, results = 'hide'}
+if(!file.exists("repdata-data-StormData.csv.bz2")){
+        url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+        download.file(url, destfile = "repdata-data-StormData.csv.bz2", method = "curl")
+}
+```
+  
+Load the data.  
+Note: `stringAsFactors = FALSE` is for future data cleaning.  
+
+```{r load_data, cache = TRUE, results='hide'}
+data <- read.csv(bzfile("repdata-data-StormData.csv.bz2"), header = TRUE, stringsAsFactors = FALSE)
+```
+
+### Data Exploration
+There are 902297 records in our datasets with 37 different variables  
+```{r dim}
+dim(data)
+```
+The variables in columns are the following:  
+```{r varialbes}
+names(data)
+```
+Here is the brief overview of this datasets  
+```{r overview}
+head(data)
+summary(data)
+```
+  
+After the exploration, we only need the variables regarding population health and economic consequence related to  the severe weather events.
+The choosing variable `REMARKS` is to understand the details of each weather event record.  
+```{r select_data, results = 'hide'}
+data_for_analysis <- data[,c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP","REMARKS")]
+```
+
+We reorder the event type variable `EVTYPE` for future convenience of data cleaning.  
+```{r order_EVTYPE, results = 'hide'}
+data_for_analysis <- data_for_analysis[order(data_for_analysis[,"EVTYPE"]),]
+```
+  
+**Uppercase** the `EVTYPE` for convenience of data cleaning also.  
+```{r uppercase_EVTYPE, results = 'hide'}
+data_for_analysis$EVTYPE <- toupper(data_for_analysis$EVTYPE)
+```
+
+### Data Transformation
+In this part, we want to  derive the total amount of economic damage each weather event caused.
+Reformating the `PROPDMG` and `CROPDMG` by `PROPDMGEXP` and `CROPDMGEXP` respectively is the goal of data transformation.
+
+The transformation will let the value of `PROPDMG` and `CROPDMG` multiply the `10^PROPDMG` and `10^CROPDMG`.
+The new aggregated values of `PROPDMG_NEW` and `CROPDMG_NEW` will be used for our future usage of indication.
+
+  
+We use `dplyr` package to better execute transformation.  
+```{r library_Trans, results = 'hide'}
+library(dplyr)
+```
+
+Referecing from [this online source](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html), we can know the symbol meaning of `PROPDMGEXP`.  
+```{r showAll_PropDMGEXP}
+unique(data_for_analysis$PROPDMGEXP)
+```
+  
+Replace the symbols into numberic representation.  
+```{r Label_to_Number_PropDMG, results = 'hide', cache=TRUE}
+data_for_analysis[data_for_analysis$PROPDMGEXP == "+",]$PROPDMGEXP <- 1
+data_for_analysis[data_for_analysis$PROPDMGEXP == "-",]$PROPDMGEXP <- 0
+data_for_analysis[data_for_analysis$PROPDMGEXP == "?",]$PROPDMGEXP <- 0
+data_for_analysis[data_for_analysis$PROPDMGEXP == "B",]$PROPDMGEXP <- 9
+data_for_analysis[data_for_analysis$PROPDMGEXP%in%c("H","h"),]$PROPDMGEXP <- 2
+data_for_analysis[data_for_analysis$PROPDMGEXP%in%c("K","k"),]$PROPDMGEXP <- 3
+data_for_analysis[data_for_analysis$PROPDMGEXP%in%c("M","m"),]$PROPDMGEXP <- 6
+data_for_analysis[data_for_analysis$PROPDMGEXP %in% c("0","1","2","3","4","5","6","7","8"),]$PROPDMGEXP <- 1
+data_for_analysis[data_for_analysis$PROPDMGEXP == "",]$PROPDMGEXP <- 0
+```
+  
+Like previous one, we can know the symbol meaning of `CROPDMGEXP` also.  
+```{r showAll_CropDMGEXP}
+unique(data_for_analysis$CROPDMGEXP)
+```
+  
+Replace the symbols into numberic representation again.  
+```{r Label_to_Number_CropDMG, results = 'hide', cache=TRUE}
+data_for_analysis[data_for_analysis$CROPDMGEXP == "?",]$CROPDMGEXP <- 0
+data_for_analysis[data_for_analysis$CROPDMGEXP == "B",]$CROPDMGEXP <- 9
+data_for_analysis[data_for_analysis$CROPDMGEXP%in%c("K","k"),]$CROPDMGEXP <- 3
+data_for_analysis[data_for_analysis$CROPDMGEXP%in%c("M","m"),]$CROPDMGEXP <- 6
+data_for_analysis[data_for_analysis$CROPDMGEXP %in% c("0","1","2","3","4","5","6","7","8"),]$CROPDMGEXP <- 1
+data_for_analysis[data_for_analysis$CROPDMGEXP == "",]$CROPDMGEXP <- 0
+```
+
+Make sure each numeric representation is in `numeric` data type.  
+```{r char_to_number, results = 'hide'}
+data_for_analysis$PROPDMGEXP <- as.numeric(data_for_analysis$PROPDMGEXP)
+data_for_analysis$CROPDMGEXP <- as.numeric(data_for_analysis$CROPDMGEXP)
+```
+
+Finally, create the new variables `PROPDMG_NEW` and `CROPDMG_NEW` for future usage.
+```{r NewExp, results = 'hide'}
+data_for_analysis<-mutate(data_for_analysis, PROPDMG_NEW = PROPDMG * 10^PROPDMGEXP)
+data_for_analysis<-mutate(data_for_analysis, CROPDMG_NEW = CROPDMG * 10^CROPDMGEXP)
+```
+
+
+### Data Cleaning: EVTYPE
+There are lots of duplicated, mispelled and irrelevant items in `EVTYPE` column.
+Based on the previous exploration, We rename or delete the original items to meet the permitted weather event naming requirement.
+
+```{r EVTYPE_Clean, results = 'hide', cache = TRUE}
+data_for_analysis <- data_for_analysis[!grepl("SUMMARY", data_for_analysis$EVTYPE),]
+data_for_analysis[grepl("DUST DEVIL|DUST DEVEL", data_for_analysis$EVTYPE),]$EVTYPE <- "DUST DEVIL"
+data_for_analysis[grepl("^WATERSPOUT| WATERSPOUT|WAYTERSPOUT|WATER SPOUT", data_for_analysis$EVTYPE),]$EVTYPE <- "WATERSPOUT"
+data_for_analysis[grepl("TORNADO|LANDSPOUT|TORNDAO|WHIRLWIND|WALL CLOUD|GUSTNADO", data_for_analysis$EVTYPE),]$EVTYPE <- "TORNADO"
+data_for_analysis[data_for_analysis$EVTYPE == "MARINE MISHAP",]$EVTYPE <- "MARINE HIGH WIND"
+data_for_analysis[data_for_analysis$EVTYPE == "MARINE TSTM WIND",]$EVTYPE <- "MARINE THUNDERSTORM WIND"
+data_for_analysis[data_for_analysis$EVTYPE == "NON TSTM WIND",]$EVTYPE <- "TROPICAL STORM"
+data_for_analysis[data_for_analysis$EVTYPE == "NON-TSTM WIND",]$EVTYPE <- "TROPICAL STORM"
+data_for_analysis[grepl("TROPICAL STORM", data_for_analysis$EVTYPE),]$EVTYPE <- "TROPICAL STORM"
+data_for_analysis[grepl("^HIGH WIND", data_for_analysis$EVTYPE),]$EVTYPE <- "HIGH WIND"
+data_for_analysis[grepl("(HURRICANE|TYPHOON)|REMNANTS OF FLOYD", data_for_analysis$EVTYPE),]$EVTYPE <- "HURRICANE(TYPHOON)"
+data_for_analysis[grepl("^BLIZZARD", data_for_analysis$EVTYPE),]$EVTYPE <- "BLIZZARD"
+data_for_analysis[data_for_analysis$EVTYPE == "GROUND BLIZZARD",]$EVTYPE <- "BLIZZARD"
+data_for_analysis[grepl("FIRE", data_for_analysis$EVTYPE),]$EVTYPE <- "WILDFIRE"
+data_for_analysis[grepl("COASTAL FLOOD|COASTALFLOOD|COASTAL/TIDAL FLOOD|CSTL|COASTAL  FLOODING|TIDAL FLOOD", data_for_analysis$EVTYPE),]$EVTYPE <- "COASTAL FLOOD"
+data_for_analysis[grepl("^AVA", data_for_analysis$EVTYPE),]$EVTYPE <- "AVALANCHE"
+data_for_analysis[grepl("RIP", data_for_analysis$EVTYPE),]$EVTYPE <- "RIP CURRENT"
+data_for_analysis[grepl("HEAVY SNOW", data_for_analysis$EVTYPE),]$EVTYPE <- "HEAVY SNOW"
+data_for_analysis[grepl("(SLEET|FREEZING RAIN)", data_for_analysis$EVTYPE),]$EVTYPE <- "SLEET"
+data_for_analysis[grepl("DENSE FOG", data_for_analysis$EVTYPE),]$EVTYPE <- "DENSE FOG"
+data_for_analysis[grepl("LAND|(ROCK SLIDE)|MUDSLIDE|MUD SLIDE", data_for_analysis$EVTYPE),]$EVTYPE <- "DEBRIS FLOW"
+data_for_analysis[grepl("LAKE FLOOD", data_for_analysis$EVTYPE),]$EVTYPE <- "LAKESHORE FLOOD"
+data_for_analysis[grepl("LAKE EFFECT SNOW|HEAVY LAKE SNOW", data_for_analysis$EVTYPE),]$EVTYPE <- "LAKE-EFFECT SNOW"
+data_for_analysis[grepl("VOLCANIC", data_for_analysis$EVTYPE),]$EVTYPE <- "VOLCANIC ASH"
+data_for_analysis[grepl("FROST|FREEZE|GLAZE", data_for_analysis$EVTYPE),]$EVTYPE <- "FROST/FREEZE"
+data_for_analysis[grepl("Dense|dense",data_for_analysis$REMARKS) & data_for_analysis$EVTYPE == "FOG",]$EVTYPE <- "DENSE FOG"
+data_for_analysis[grepl("Freezing|Icy|Ice|Cold",data_for_analysis$REMARKS, ignore.case = TRUE) & data_for_analysis$EVTYPE == "FOG",]$EVTYPE <- "FREEZING FOG"
+data_for_analysis[grepl("^FOG", data_for_analysis$EVTYPE),]$EVTYPE <- "DENSE FOG"
+data_for_analysis[grepl("ICE FOG", data_for_analysis$EVTYPE),]$EVTYPE <- "FREEZING FOG"
+data_for_analysis[grepl("TSTM", data_for_analysis$EVTYPE),]$EVTYPE <- "THUNDERSTORM WIND"
+data_for_analysis[grepl("^FLOOD", data_for_analysis$EVTYPE),]$EVTYPE <- "FLOOD"
+data_for_analysis[grepl("ICE STORM|ICESTORM", data_for_analysis$EVTYPE),]$EVTYPE <- "ICE STORM"
+data_for_analysis[grepl("THUNDERSTORM|THUNDERESTORM|TUNDERSTORM|THUNDEERSTORM|THUNDESTORM|THUDERSTORM|THUNERSTORM|METRO STORM, MAY 26|DOWNBURST", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "MARINE THUNDERSTORM WIND",]$EVTYPE <- "THUNDERSTORM WIND"
+data_for_analysis[grepl("FLASH", data_for_analysis$EVTYPE),]$EVTYPE <- "FLASH FLOOD"
+data_for_analysis[grepl("^LIGHTNING| LIGHTNING|LIGHTING", data_for_analysis$EVTYPE),]$EVTYPE <- "LIGHTNING"
+data_for_analysis[grepl("HEAVY RAIN|RAINSTORM|RAIN (HEAVY)|EXCESSIVE RAINFALL|EXCESSIVE RAIN|RAIN", data_for_analysis$EVTYPE),]$EVTYPE <- "HEAVY RAIN"
+data_for_analysis[grepl("HIGH SURF|HIGH SEAS", data_for_analysis$EVTYPE),]$EVTYPE <- "HIGH SURF"
+data_for_analysis[grepl("(^EXCESSIVE HEAT)|(^EXTREME HEAT)|RECORD/EXCESSIVE HEAT|EXCESSIVE", data_for_analysis$EVTYPE),]$EVTYPE <- "EXCESSIVE HEAT"
+data_for_analysis[grepl("DROUGHT|DRYNESS|DRY CONDITIONS", data_for_analysis$EVTYPE),]$EVTYPE <- "DROUGHT"
+data_for_analysis[grepl("HEAT", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE!= "EXCESSIVE HEAT",]$EVTYPE <- "HEAT"
+data_for_analysis[grepl("FUNNEL", data_for_analysis$EVTYPE),]$EVTYPE <- "FUNNEL CLOUD"
+data_for_analysis[grepl("DUST STORM|DUSTSTORM", data_for_analysis$EVTYPE),]$EVTYPE <- "DUST STORM"
+data_for_analysis[grepl("WINTER STORM", data_for_analysis$EVTYPE),]$EVTYPE <- "WINTER STORM"
+data_for_analysis[grepl("HIGH WIND|^WIND| WIND", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE!= "MARINE HIGH WIND|WIND CHILL",]$EVTYPE <- "HIGH WIND"
+data_for_analysis[grepl("(GUSTY )|STRONG|WIND GUSTS|WND", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE!= "MARINE STRONG WIND",]$EVTYPE <- "STRONG WIND"
+data_for_analysis[grepl("HAIL", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "MARINE HAIL",]$EVTYPE <- "HAIL"
+data_for_analysis[grepl("STORM SURGE|COASTAL STORM|COASTALSTORM|BEACH FLOOD|TIDE|SURGE", data_for_analysis$EVTYPE),]$EVTYPE <- "STORM SURGE/TIDE"
+data_for_analysis[grepl("SNOWSTORM", data_for_analysis$EVTYPE),]$EVTYPE <- "WINTER STORM"
+data_for_analysis[grepl("EXTREME COLD|SEVERE COLD|UNSEASONABLY COLD|EXTREME/RECORD COLD|UNUSUALLY COLD|UNSEASONABLE COLD|EXCESSIVE COLD|UNSEASONABLY COOL", data_for_analysis$EVTYPE),]$EVTYPE <- "EXTREME COLD/WIND CHILL"
+data_for_analysis[grepl("COLD", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "EXTREME COLD/WIND CHILL",]$EVTYPE <- "COLD/WIND CHILL"
+data_for_analysis[grepl("SNOW", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "LAKE-EFFECT SNOW",]$EVTYPE <- "WINTER WEATHER"
+data_for_analysis[grepl("FLOOD", data_for_analysis$EVTYPE),]$EVTYPE <- "FLOOD"
+data_for_analysis[grepl("FLOOD|FLD", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "FLASH FLOOD" & data_for_analysis$EVTYPE != "COASTAL FLOOD" & data_for_analysis$EVTYPE != "LAKESHORE FLOOD",]$EVTYPE <- "FLOOD"
+data_for_analysis[grepl("^WINT", data_for_analysis$EVTYPE) & data_for_analysis$EVTYPE != "WINTER STORM",]$EVTYPE <- "WINTER WEATHER"
+```
+
+### Plotting Preparation
+For plotting purpose, we select the following columns:  
+
+```{r select_data_for_plot, results = 'hide'}
+data_for_analysis <- data_for_analysis[,c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG_NEW", "CROPDMG_NEW")]
+```
+
+Fisrt, We prepare the new dataframe about Event Type and summation of Fatality/Injury cases.  
+```{r results = 'hide'}
+Fatal <- aggregate(FATALITIES ~ EVTYPE, data = data_for_analysis, sum)
+Fatal <- Fatal[order(Fatal$FATALITIES, decreasing = TRUE),,drop=FALSE]
+
+Injure <- aggregate(INJURIES ~ EVTYPE, data = data_for_analysis, sum)
+Injure <- Injure[order(Injure$INJURIES, decreasing = TRUE),]
+```
+
+Second, Prepare the new dataframe about Event Type and summation of Property/Crop Damage amount.  
+```{r results = 'hide'}
+Property_DMG <- aggregate(PROPDMG_NEW ~ EVTYPE, data = data_for_analysis, sum) 
+Property_DMG <- Property_DMG[order(Property_DMG$PROPDMG_NEW, decreasing = TRUE),]
+
+Crop_DMG <- aggregate(CROPDMG_NEW ~ EVTYPE, data = data_for_analysis, sum)
+Crop_DMG <- Crop_DMG[order(Crop_DMG$CROPDMG_NEW, decreasing = TRUE),]
+```
+
+We choose these two packages for plotting.
+※ `gridExtra` is for making plots together in single graph.
+```{r library_Plot, results = 'hide'}
+library(ggplot2)
+library(gridExtra)
+```
+
+#Results
+
+> #####Tornado is the most harmful to population health from 1950 to Nov 2011.  
+
+```{r Fatal&Injure, fig.align = "center", fig.height=10 ,fig.width=14}
+F_P <- ggplot(data = Fatal[1:7,], aes(x = reorder(EVTYPE,-FATALITIES), y = FATALITIES)) + 
+        geom_bar(stat = "identity", fill = "steelblue",width = 0.5) + 
+        geom_text(aes(label = format(FATALITIES, big.mark = ",")), vjust = -0.4, color = "black", size = 3) +
+        theme(aspect.ratio = .1) + labs(x = "Type of Severe Weather Events", y = "Number of Fatality Case") +
+        ggtitle("Top 7 Harmful Events With Respect To Population Health: Fatalities") + theme_minimal()
+                
+I_P <- ggplot(data = Injure[1:7,], aes(x = reorder(EVTYPE,-INJURIES), y = INJURIES)) + 
+        geom_bar(stat = "identity", fill= "#FF9999", width = 0.5) + 
+        geom_text(aes(label = format(INJURIES, big.mark = ",")), vjust = -0.4, color = "black", size = 3) + 
+        theme(aspect.ratio = .1) + labs(x = "Type of Severe Weather Events", y = "Number of Injury Case") +
+        ggtitle("Top 7 Harmful Events With Respect To Population Health: Injuries") + theme_minimal()
+
+grid.arrange(F_P, I_P, nrow = 2)
+```
+
+
+> #####Flood caused the greates economic damage from 1950 to Nov 2011.  
+
+```{r Prop&Crop, fig.align = "center", fig.height=10, fig.width=14}
+P_P <- ggplot(data = Property_DMG[1:7,], aes(x = reorder(EVTYPE,-PROPDMG_NEW), y = PROPDMG_NEW)) + 
+        geom_bar(stat = "identity", fill = "steelblue",width = 0.5) + 
+        geom_text(aes(label = format(PROPDMG_NEW, big.mark = ",")), vjust = -0.4, color = "black", size = 3) +
+        theme(aspect.ratio = .1) + labs(x = "Type of Severe Weather Events", y = "") +
+        ggtitle("Top 7 Harmful Events Cause Disastrous Economic Consequence - Property") + theme_minimal()
+
+C_P <- ggplot(data = Crop_DMG[1:7,], aes(x = reorder(EVTYPE,-CROPDMG_NEW), y = CROPDMG_NEW)) + 
+        geom_bar(stat = "identity", fill= "#FF9999", width = 0.5) + 
+        geom_text(aes(label = format(CROPDMG_NEW, big.mark = ",")), vjust = -0.4, color = "black", size = 3) + 
+        theme(aspect.ratio = .1) + labs(x = "Type of Severe Weather Events", y = "") +
+        ggtitle("Top 7 Harmful Events Cause Disastrous Economic Consequence - Crop") + theme_minimal()
+grid.arrange(P_P, C_P, nrow = 2)
+
+```
