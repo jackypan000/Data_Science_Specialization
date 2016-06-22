@@ -1,0 +1,99 @@
+---
+title: "Illustration of Central Limit Theorem"
+author: "Jacky Pan"
+output:
+  html_document: default
+  html_notebook: default
+---
+## Overview
+This project is to illustrate the simulation results from the distribution of averages of 40 exponentials. 
+The results shows that:   
+
+1. Comparison between sample statistics with theoretical ones (Mean & Standard deviation) is approximate.
+
+2. The significant normality of average distribution is in complete accord with the result of Central Limit Theorem.
+
+## Simulations
+In the simulation, we will create two statistical models to compare the sample of average of 40 exponentials and its theoretical outcome.
+
+To verify whether Central Limit Theorem holds, we firstly conduct 1000 simulation of each 40 random exponential sample and average samples of each simulation to observe the distribution.
+
+```{r}
+set.seed(123)
+sample_mns <- NULL
+for (i in 1:1000) sample_mns <- c(sample_mns, mean(rexp(40, 0.2)))
+plot(density(sample_mns), col = "red", xlab = "", main = "Sample distribution")
+```
+
+**The sample statistics are:**
+
+* Sample mean: `r mean(sample_mns)`
+* Sample variance: `r var(sample_mns)`
+
+
+******
+
+Secondly, we use the statistics from theory (mean and standard error of mean) from sample distribution of exponential to conduct a random normal distribution.
+
+```{r}
+set.seed(123)
+lambda <- 0.2
+theo_mns <- rnorm(n = 1000, mean = 1/lambda, sd = (1/lambda)/sqrt(40))
+plot(density(theo_mns), col = "blue", xlab = "", main = "Theoretical distribution")
+```
+
+**The statistics in theory are:**
+
+* Theoretical mean: `r 1/lambda`
+* Theoretical variance: `r ((1/lambda)/sqrt(40))^2`
+
+
+******
+## Results
+
+### Sample Mean versus Theoretical Mean
+We compare the mean statistics on the plot of sample distribution. The red line is the mean of sample and the blue one is theoretical.
+
+From the graph below, we can infer that the sample statistics is consistent with the theoretical one. (Mean statistics)
+
+```{r}
+set.seed(123)
+
+plot(density(sample_mns), xlab = "", main = "")
+abline(v = mean(sample_mns), col = "red", lwd = 2)
+abline(v = mean(theo_mns), col = "blue", lty = "dotdash", lwd = 2)
+legend(x = "topright", c("Sample", "Theoretical"), lty = c(1,4), lwd = c(2,2), col = c("red", "blue"))
+```
+
+### Sample Variance versus Theoretical Variance
+
+Further, we compare the variance statistics on the plot of sample distribution. The red line is the one standard deviation from the sample mean and the blue one is theoretical one. The mean of sample is the middle black tick.
+
+From the graph below, we can infer that the sample statistics is also consistent with the theoretical one. (Variance/Standard Deviation Statistics)
+
+```{r}
+set.seed(123)
+plot(density(sample_mns), xlab = "", main = "")
+axis(side = 1, at = mean(sample_mns), tick = TRUE, lwd.ticks = 2, labels = "")
+mtext(text = "Sample Mean", side = 1, at = mean(sample_mns), cex = .5)
+abline(v = mean(sample_mns) + c(1,-1)*sd(sample_mns) , col = "red", lwd = 2)
+abline(v = mean(sample_mns) + c(1,-1)*sd(theo_mns), col = "blue", lwd = 2, lty = "dotdash")
+legend(x = "topright", c("Sample", "Theoretical"), lty = c(1,4), lwd = c(2,2), col = c("red", "blue"))
+```
+
+### Distribution
+
+Finally, we plot the distribution of sample to compare the normal distribution from the theory. The two distribution is approximately identical. 
+(The sample distribution is red and the theoretical one is blue.)
+
+```{r}
+set.seed(123)
+plot(density(sample_mns), col = "red", xlab = "", main = "")
+lines(density(theo_mns), col = "blue")
+legend(x = "topright", c("Sample", "Theoretical"), lty = c(1,1), lwd = c(1,1), col = c("red", "blue"))
+```
+
+******
+
+## Conclusions
+> Followed by the above results, we can infer that central limit theorem holds which means the average of sample distribution will lead to normal distribution.

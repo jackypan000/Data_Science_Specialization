@@ -1,0 +1,82 @@
+---
+title: "Inferential data analysis practice"
+author: "Jacky Pan"
+output:
+  html_document: default
+  html_notebook: default
+---
+## Overview
+
+The project is to analyze the ToothGrowth data in R datasets packages. The process includes:
+
+1. Exploratory data analysis to summarize data.
+
+2. Hypothesis statement after analysis to gain insight.
+
+3. Hypothesis testing via confidence intervals or other testing methods.
+
+4. Conclusion obtained from analysis. 
+
+## Exploratory analysis and hypothesis development
+
+The data of ToothGrowth is a data fram with 60 observations on 3 variables.
+
+[,1]	len	numeric	Tooth length.
+
+[,2]	supp	factor	Supplement type (VC or OJ).
+
+[,3]	dose	numeric	Dose in milligrams/day.
+
+```{r}
+data("ToothGrowth")
+dim(ToothGrowth)
+names(ToothGrowth)
+```
+
+```{r}
+summary(ToothGrowth)
+```
+******
+After depicting a boxplot, we found that the supplement type of orange juice (OJ) has greater mean and less variance compared to the supplement type of ascorbic acid (VC).
+
+```{r}
+boxplot(len ~ supp, data = ToothGrowth, xlab = "Supplement Type", ylab = "Length growth of tooth", main = "Tooth Growth Observation Comparing Supplement Type")
+```
+
+We depicted another boxplot and found that the greater dose levels of vitamin C, the longer the tooth growth.
+```{r}
+boxplot(len ~ dose, data = ToothGrowth, xlab = "Dose Levels of Vitamin C", ylab = "Length growth of tooth", main = "Tooth Growth Observation Comparing Dose Levels of Vitamin C")
+
+```
+
+
+**Based on the data exploration, we develop two hypotheses for our data:**
+
+* H1. The supplement type of orange juice (OJ) has stronger influence on length of tooth growth than the supplement type of ascorbic acid (VC)
+* H2. The dose levels of vitamin C is positively associated with length of tooth growth.
+
+
+## Hypothesis testing
+
+###H1.
+We perform t-test to determine whether the two supplement type are significantly different, which means the rejection of null hypothesis (the supplement type has the same effect on tooth growth). 
+
+The result indicates that we don't reject the null hypothesis because p-value is larger than 0.05 and the mean difference lies in confidence interval. **H1 is not supported.**
+
+```{r}
+t.test(len ~ supp, var.equal = F, paired = F, data = ToothGrowth)
+```
+******
+###H2.
+The number of class of dose levels is three so we can't apply t-test. Instead, we perform one-way anova to test our hypothesis.
+
+The result shows that F value is 105.1 and p-value is smaller that 0.05. We can reject the null hypothesis(The influence of dose levels are the same.). **H2 is supported**
+
+```{r}
+summary(aov(len ~ dose, data = ToothGrowth))
+```
+
+******
+## Conclusion
+> 1. The supplement type (OJ & VC) has no difference on tooth growth.
+> 2. The more dose levels of vitamin C, the greater influence on tooth growth.
