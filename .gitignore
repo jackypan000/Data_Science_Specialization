@@ -25,3 +25,6 @@ vignettes/*.pdf
 *.pdf
 *.doc
 *.docx
+
+Web Data
+*.webarchive
